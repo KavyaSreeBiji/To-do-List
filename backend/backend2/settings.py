@@ -1,10 +1,17 @@
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = True
+# Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')
 
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-please-change')
+
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 ROOT_URLCONF = 'backend2.urls'
 
@@ -57,4 +64,10 @@ DATABASES = {
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS settings
+cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if cors_origins:
+    CORS_ALLOWED_ORIGINS = cors_origins.split(',')
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
