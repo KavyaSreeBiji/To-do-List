@@ -1,35 +1,37 @@
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task
 
-@api_view(['GET'])
-def get_tasks(request):
-    tasks = Task.objects.all()
-    data = [
-        {
-            "id": task.id,
-            "text": task.text,
-            "completed": task.completed
-        }
-        for task in tasks
-    ]
-    return Response(data)
 
-@api_view(['POST'])
+def tasks_page(request):
+    """Render an HTML page listing all tasks from the database."""
+    tasks = Task.objects.all().order_by('id')
+    return render(request, 'tasks/list.html', {
+        'tasks': tasks,
+    })
+
+
 def add_task(request):
-    text = request.data.get("text")
-    if text:
-        Task.objects.create(text=text)
-    return Response({"status": "task added"})
+    """Handle task creation via a simple POST form and redirect back to list."""
+    if request.method == 'POST':
+        text = (request.POST.get('text') or '').strip()
+        if text:
+            Task.objects.create(text=text)
+    return redirect('tasks_list')
 
-@api_view(['PUT'])
-def toggle_task(request, id):
-    task = Task.objects.get(id=id)
-    task.completed = not task.completed
-    task.save()
-    return Response({"status": "updated"})
 
-@api_view(['DELETE'])
 def delete_task(request, id):
-    Task.objects.get(id=id).delete()
-    return Response({"status": "deleted"})
+    """Delete a task by id (POST) and redirect back to list."""
+    if request.method == 'POST':
+        task = get_object_or_404(Task, id=id)
+        task.delete()
+    return redirect('tasks_list')
+
+
+def mark_done(request, id):
+    """Mark a task as completed (POST) and redirect back to list."""
+    if request.method == 'POST':
+        task = get_object_or_404(Task, id=id)
+        if not task.completed:
+            task.completed = True
+            task.save()
+    return redirect('tasks_list')

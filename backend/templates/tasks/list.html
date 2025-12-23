@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tasks</title>
+    <link rel="stylesheet" href="{% static 'tasks.css' %}">
+</head>
+<body>
+    <h1>All Tasks</h1>
+
+    <form action="{% url 'add_task' %}" method="post" style="margin-bottom:1rem; display:flex; gap:.5rem;">
+        {% csrf_token %}
+        <input type="text" name="text" placeholder="Enter a task" required>
+        <button type="submit">Add</button>
+    </form>
+
+    {% if tasks %}
+        <ul>
+            {% for task in tasks %}
+            <li>
+                <span class="{% if task.completed %}completed{% endif %}">{{ task.text }}</span>
+                {% if not task.completed %}
+                <form action="{% url 'mark_done' task.id %}" method="post" style="margin-left:auto; margin-right:.5rem;">
+                    {% csrf_token %}
+                    <button type="submit">Mark as done</button>
+                </form>
+                {% else %}
+                <span class="badge" style="margin-left:auto; margin-right:.5rem;">Done</span>
+                {% endif %}
+                <form action="{% url 'delete_task' task.id %}" method="post" style="margin-left:auto;">
+                    {% csrf_token %}
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty">No tasks yet.</p>
+    {% endif %}
+</body>
+</html>
